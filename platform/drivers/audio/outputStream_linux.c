@@ -60,16 +60,18 @@ static void buf_circ_write_cb(pa_stream *s, size_t length, void *userdata)
     if (offset >= buf_len / 2)
         first_half_active = false;
 
-    // We can play length more bytes of data
-    if (length > (buf_len - offset))
+    remaining = (int32_t) buf_len - offset;
+    // We can play all the rest of the buffer
+    if (length > remaining)
     {
-        remaining = buf_len - offset;
         pa_stream_write(s, buf + offset, remaining, NULL, 0, PA_SEEK_RELATIVE);
         first_half_active = true;
         offset = 0;
+    } else
+    {
+        pa_stream_write(s, buf + offset, length, NULL, 0, PA_SEEK_RELATIVE);
+        offset += length;
     }
-    pa_stream_write(s, buf + offset, length - remaining, NULL, 0, PA_SEEK_RELATIVE);
-    offset += length - remaining;
 }
 
 streamId outputStream_start(const enum AudioSink destination,
