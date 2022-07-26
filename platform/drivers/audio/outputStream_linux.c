@@ -60,14 +60,21 @@ static void buf_circ_write_cb(pa_stream *s, size_t length, void *userdata)
     if (offset >= buf_len / 2)
         first_half_active = false;
 
-    remaining = (int32_t) buf_len - offset;
+    remaining = buf_len - offset;
+
     // We can play all the rest of the buffer
     if (length > remaining)
     {
         pa_stream_write(s, buf + offset, remaining, NULL, 0, PA_SEEK_RELATIVE);
-        first_half_active = true;
+
+        if(first_half_active == true)
+            first_half_active = false;
+        else
+            first_half_active = true;
+
         offset = 0;
-    } else
+    }
+    else
     {
         pa_stream_write(s, buf + offset, length, NULL, 0, PA_SEEK_RELATIVE);
         offset += length;
